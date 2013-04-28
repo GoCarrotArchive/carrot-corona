@@ -34,6 +34,10 @@ While the helper script has already done a replacement of `carrot` for you, ther
 
 Please see the section `Replacing strings in ALL CAPS` in the [Plugin Submission Guidelines](http://docs.coronalabs.com/daily/native/plugin/submission.html) for a complete list.
 
+* metadata.json
+* shared/plugin_xxxx.lua
+* Corona/build.settings
+
 ## Submitting
 
 If you've finished the steps mentioned in 'Updating the project', then you are ready to submit. 

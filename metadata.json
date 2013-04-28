@@ -1,6 +1,6 @@
 {
-    "contact": "PUBLISHER_CONTACT@PUBLISHER_URL",
-    "url": "http://PUBLISHER_URL",
+    "contact": "pat@gocarrot.com",
+    "url": "http://ocarrot.com",
     "pluginName": "plugin.carrot",
-    "publisherId": "REVERSE_PUBLISHER_URL"
+    "publisherId": "com.gocarrot"
 }
