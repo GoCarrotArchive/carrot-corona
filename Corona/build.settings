@@ -1,0 +1,41 @@
+settings =
+{
+	--[[
+	orientation = {
+		default = "portrait", 
+		supported = { "portrait", },
+		-- supported = { "landscapeLeft", "landscapeRight" },
+		-- supported = { "landscapeLeft", "landscapeRight", "portrait", "portraitUpsideDown", },
+	},
+	--]]
+
+	iphone =
+	{
+		plist =
+		{
+			-- UIApplicationExitsOnSuspend = true, -- default is false
+			CFBundleIconFile = "Icon.png",
+			CFBundleIconFiles =
+			{
+				"Icon.png", 
+				"Icon@2x.png", 
+				"Icon-72.png", 
+			},
+
+		},
+	},
+
+	-- INSTRUCTIONS
+	-- 
+	-- 1. Rename carrot to the name of your plugin, e.g. "openudid"
+	-- 2. Rename REVERSE_PUBLISHER_URL using the reverse domain name, e.g. "com.mycompany"
+	plugins =
+	{
+		-- key is the name passed to Lua's 'require()'
+		["plugin.carrot"] =
+		{
+			-- required
+			publisherId = "REVERSE_PUBLISHER_URL",
+		},
+	},
+}
