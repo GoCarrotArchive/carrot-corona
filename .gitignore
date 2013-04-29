@@ -10,3 +10,8 @@ android/proguard-project.txt
 build/
 
 ios/build/
+ios/Plugin.xcodeproj/xcuserdata/
+ios/PluginTestApp.xcodeproj/xcuserdata/
+ios/PluginTestApp.xcodeproj/project.xcworkspace/
+
+.DS_Store
