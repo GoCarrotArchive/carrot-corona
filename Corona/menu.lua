@@ -13,8 +13,8 @@ local widget = require "widget"
 local carrot = require "plugin_carrot"
 local facebook = require "facebook"
 
-local fbAppID = "280914862014150"
-local carrotAppSecret = "aa37313c6062762980f95a0711af0537"
+local fbAppID = "<< FACEBOOK APP ID >>"
+local carrotAppSecret = "<< CARROT APP SECRET >>"
 
 --------------------------------------------
 
@@ -71,16 +71,16 @@ function scene:createScene( event )
 		carrotStatusText.x = 0;
 	end)
 
-	--[[if system.getInfo("environment") == "device" then
+	if system.getInfo("environment") == "device" then
 		facebook.login(fbAppID, function(event)
 			if event.type == "session" and event.phase == "login" then
 				carrot.validateUser(event.token)
 			end
 		end, {"publish_actions"})
-	else]]
-		local debugUserToken = "BAADZCfZAaPZCsYBALzwK2Vl6FJ1DHLzZAQVk5aZATGZAtk6aQfjVWXcU9ZAhx5hfJkZChFr5542RAVTC64blUV5aD6YoT7FOoVcHvDes3fzTbjdkgiCZCMDAoUaSRzuTACie7jAcHMDGRAN5ZC2elU1PC2clZCC5Jxw5zRgZBW4G13oRwIaiYuPgKlkTnllZAwuQlUqZBgf0w5ZBZBk8LqaPzNvUMBO1a892BWmW3CYZD"
+	else
+		local debugUserToken = "<< USER TOKEN FROM ACCESS TOKEN TOOL >>"
 		carrot.validateUser(debugUserToken)
-	--end
+	end
 end
 
 -- Called immediately after scene has moved onscreen:
