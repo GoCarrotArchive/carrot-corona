@@ -81,8 +81,8 @@ checkError
 checkError
 
 # Uncomment if using facebook
-# "$SDK_PATH/tools/android" update lib-project -p "$CORONA_PATH/Corona/android/lib/facebook/facebook"
-# checkError
+"$SDK_PATH/tools/android" update lib-project -p "$CORONA_PATH/Corona/android/lib/facebook/facebook"
+checkError
 
 # Build plugin .so file and copy to libs
 cd "$path" > /dev/null
