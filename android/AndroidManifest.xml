@@ -17,6 +17,9 @@
 	<!-- Informs the app store what features are required or are optional for this app. -->
 	<!-- Setting the telephony feature to not required allows this app to be installed by devices that are not phones. -->
 	<uses-feature android:name="android.hardware.telephony" android:required="false"/>
+
+	<!-- Uses internet permission -->
+	<uses-permission android:name="android.permission.INTERNET"/>
 	
 	<!--
 	 Provides information about this app.

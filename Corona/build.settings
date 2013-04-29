@@ -25,6 +25,12 @@ settings =
 		},
 	},
 
+	android = {
+		usesPermissions = {
+			"android.permission.INTERNET",
+		}
+	},
+
 	plugins =
 	{
 		-- key is the name passed to Lua's 'require()'
