@@ -1,5 +1,12 @@
+android/assets/
+android/bin/
+android/gen/
 android/libs/
+android/local.properties
 android/obj/
 android/plugin_carrot.c
+android/proguard-project.txt
+
 build/
+
 ios/build/
