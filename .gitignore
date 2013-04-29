@@ -1,0 +1,5 @@
+android/libs/
+android/obj/
+android/plugin_carrot.c
+build/
+ios/build/
