@@ -1,3 +1,14 @@
-local carrot = require "plugin_carrot"
+-----------------------------------------------------------------------------------------
+--
+-- main.lua
+--
+-----------------------------------------------------------------------------------------
 
-carrot.test()
+-- hide the status bar
+display.setStatusBar( display.HiddenStatusBar )
+
+-- include the Corona "storyboard" module
+local storyboard = require "storyboard"
+
+-- load menu screen
+storyboard.gotoScene( "menu" )
