@@ -109,3 +109,6 @@ ant release -D"CoronaEnterpriseDir"="$CORONA_PATH"
 checkError
 
 echo "Success: Build application with plugin '${TARGET_NAME}.so'"
+
+
+jarsigner -verbose -keystore ~/.android/debug.keystore -storepass android -keypass android ./bin/App-release-unsigned.apk androiddebugkey
