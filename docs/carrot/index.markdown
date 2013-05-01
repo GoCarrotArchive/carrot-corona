@@ -43,6 +43,8 @@ The following platforms are supported:
 
 #### [carrot.postAction()][plugin.carrot.postAction]
 
+## Properties
+
 #### [carrot.logTag][plugin.carrot.logTag]
 
 ## Project Settings
