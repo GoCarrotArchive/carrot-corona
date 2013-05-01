@@ -10,11 +10,11 @@
 
 ## Overview
 
-The carrot plugin enables X.
+The carrot plugin enables developers to post viral actions to the Carrot service.
 
 ## Sign Up
 
-To use the SERVICE_NAME service, please [sign up](CORONA_REFERRAL_URL) for an account.
+To use the Carrot service, please [sign up](https://gocarrot.com/developers/sign_up?referrer=corona) for an account.
 
 ## Platforms
 
@@ -29,9 +29,21 @@ The following platforms are supported:
 
 ## Functions
 
-#### [carrot.FUNCTION()][plugin.carrot.FUNCTION]
+#### [carrot.init()][plugin.carrot.init]
 
-#### [carrot.PROPERTY][plugin.carrot.PROPERTY]
+#### [carrot.validateUser()][plugin.carrot.validateUser]
+
+#### [carrot.getStatus()][plugin.carrot.getStatus]
+
+#### [carrot.setStatusCallback()][plugin.carrot.setStatusCallback]
+
+#### [carrot.postAchievement()][plugin.carrot.postAchievement]
+
+#### [carrot.postHighScore()][plugin.carrot.postHighScore]
+
+#### [carrot.postAction()][plugin.carrot.postAction]
+
+#### [carrot.logTag][plugin.carrot.logTag]
 
 ## Project Settings
 
@@ -50,9 +62,9 @@ settings =
 		["plugin.carrot"] =
 		{
 			-- required
-			publisherId = "REVERSE_PUBLISHER_URL",
+			publisherId = "com.gocarrot",
 		},
-	},		
+	},
 }
 ``````
 
@@ -66,8 +78,8 @@ You can access sample code [here](SAMPLE_CODE_URL).
 
 ## Support
 
-More support is available from the PUBLISHER_NAME team:
+More support is available from the Carrot team:
 
-* [E-mail](mailto://PUBLISHER_CONTACT@PUBLISHER_URL)
+* [E-mail](mailto://pat@gocarrot.com)
 * [Forum](http://forum.coronalabs.com/plugin/carrot)
-* [Plugin Publisher](http://PUBLISHER_URL)
+* [Plugin Publisher](http://gocarrot.com)

@@ -48,15 +48,8 @@ carrot.status = {
 	UNKNOWN = "UNKNOWN"
 }
 
--- The prefix added to all Carrot log messages. This can be changed, or logging can be
--- disabled by setting this to 'nil'.
 carrot.logTag = "[Carrot]"
 
--- Initialize Carrot.
---
--- @param appId     Facebook Application Id.
--- @param appSecret Carrot App Secret.
--- @param hostname  [Optional] Hostname for debugging purposes only.
 carrot.init = function(appId, appSecret, hostname)
 	carrot._appId = appId
 	carrot._appSecret = appSecret
@@ -77,24 +70,14 @@ carrot.init = function(appId, appSecret, hostname)
 	end)
 end
 
--- Get the status of the current Carrot user.
---
--- @return The status of the current Carrot user.
 carrot.getStatus = function()
 	return carrot._status
 end
 
--- Assign a callback function which will get triggered each time the user status changes.
---
--- @param callback A function which takes one argument that will be called when a user status changes.
 carrot.setStatusCallback = function(callback)
 	carrot._statusCallback = callback
 end
 
--- Validate a user for Carrot, creating a new user if needed.
---
--- @param accessToken A Facebook user access token retrieved from Facebook sign in.
--- @param callback    [Optional] A callback which will be triggered with the status of the provided user token upon completion.
 carrot.validateUser = function(accessToken, callback)
 	local params = {
 		access_token = accessToken,
@@ -107,25 +90,14 @@ carrot.validateUser = function(accessToken, callback)
 	end)
 end
 
--- Post an achievement to the Carrot service.
---
--- @param achievementId The identifier of the achievement in Carrot.
 carrot.postAchievement = function(achievementId)
 	carrot._makeCachedRequest("/me/achievements.json", {achievement_id = achievementId})
 end
 
--- Post a high score to the Carrot service.
---
--- @param score The score the user has attained, integer. Only the highest score will be reported to Facebook.
 carrot.postHighScore = function(score)
 	carrot._makeCachedRequest("/me/scores.json", {value = score})
 end
 
--- Post an action to the Carrot service.
---
--- @param actionId         The identifier for the action in Carrot.
--- @param objectInstanceId The identifier of the object instance in Carrot.
--- @param actionProperties [Optional] Properties to be sent along with the action.
 carrot.postAction = function(actionId, objectInstanceId, actionProperties)
 	local payload = {action_id = actionId, object_instance_id = objectInstanceId}
 	if actionProperties then payload['action_properties'] = actionProperties end
