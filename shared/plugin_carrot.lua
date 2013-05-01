@@ -114,6 +114,8 @@ carrot._getDb = function()
 		if carrot._db:exec(kCacheCreateSQL) ~= sqlite3.OK then
 			if carrot.logTag then print(carrot.logTag, "Error creating Carrot cache "..carrot._db:error_message()) end
 		end
+	else
+		if carrot.logTag then print(carrot.logTag, "Error creating Carrot cache "..carrot._db:error_message()) end
 	end
 	return carrot._db
 end
