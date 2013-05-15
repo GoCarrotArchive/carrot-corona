@@ -10,7 +10,7 @@ local scene = storyboard.newScene()
 -- include Corona's "widget" library
 local widget = require "widget"
 
-local carrot = require "plugin_carrot"
+local carrot = require "plugin.carrot"
 local facebook = require "facebook"
 
 local fbAppID = "<< FACEBOOK APP ID >>"
