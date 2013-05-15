@@ -4,13 +4,17 @@
 > __Type__              [library][api.type.library]
 > __Revision__          [REVISION_LABEL](REVISION_URL)
 > __Keywords__          carrot
-> __Sample code__       
+> __Sample code__       [Available in the Carrot Docs for Corona](https://gocarrot.com/docs/corona)
 > __See also__          
 > --------------------- ------------------------------------------------------------------------------------------
 
 ## Overview
 
-The carrot plugin enables developers to post viral actions to the Carrot service.
+Carrot gives app developers the tools they need to make viral user acquisition a part of their growth strategy. Our social backend provides distribution through the best viral growth channels (such as Facebook's 'custom actions'), and identifies ways to make viral content more effective.
+
+Our dashboard shows developers what virals get the most impressions, clicks and installs, and our WYSIWYG web tools allow rapid iteration on viral campaigns, without any code changes.
+
+This plugin enables Corona developers to post viral actions to the Carrot service.
 
 ## Sign Up
 
@@ -83,5 +87,5 @@ You can access sample code [here](SAMPLE_CODE_URL).
 More support is available from the Carrot team:
 
 * [E-mail](mailto://pat@gocarrot.com)
-* [Forum](http://forum.coronalabs.com/plugin/carrot)
+* [Forum](http://forums.coronalabs.com/forum/607-carrot/)
 * [Plugin Publisher](http://gocarrot.com)
