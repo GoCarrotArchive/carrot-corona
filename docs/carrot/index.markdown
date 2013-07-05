@@ -52,6 +52,8 @@ The following platforms are supported:
 
 #### [carrot.logTag][plugin.carrot.logTag]
 
+#### [carrot.tag][plugin.carrot.tag]
+
 ## Project Settings
 
 ### SDK
@@ -81,7 +83,7 @@ TBD
 
 ## Sample Code
 
-You can access sample code [here](SAMPLE_CODE_URL).
+You can access sample code [here](https://gocarrot.com/docs/corona).
 
 ## Support
 
