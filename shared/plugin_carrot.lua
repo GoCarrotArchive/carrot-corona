@@ -78,7 +78,7 @@ carrot.setStatusCallback = function(callback)
 	carrot._statusCallback = callback
 end
 
-carrot.validateUser = function(accessToken, callback)
+carrot.validateUser = function(accessToken)
 	local params = {
 		access_token = accessToken,
 		api_key = carrot._udid
@@ -86,7 +86,6 @@ carrot.validateUser = function(accessToken, callback)
 
 	carrot._postRequest("/games/"..carrot._appId.."/users.json", params, function(event)
 		local status = carrot._updateStatus(event)
-		if callback then callback(status) end
 	end)
 end
 

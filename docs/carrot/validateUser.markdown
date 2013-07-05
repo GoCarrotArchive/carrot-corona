@@ -15,13 +15,10 @@ Validate a user for Carrot, creating a new user if needed.
 
 ## Syntax
 
-	carrot.validateUser( accessToken [, callback] )
+	carrot.validateUser( accessToken )
 
 ##### accessToken ~^(required)^~
 _[String][api.type.String]._ A Facebook user access token retrieved from Facebook sign in.
-
-##### callback ~^(optional)^~
-_[function][api.type.function]._ A callback which will be triggered with the status of the provided user token upon completion.
 
 ## Examples
 
