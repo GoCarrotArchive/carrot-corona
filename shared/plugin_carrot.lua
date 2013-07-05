@@ -22,6 +22,7 @@ local json = require "json"
 local crypto = require "crypto"
 local ltn12 = require "ltn12"
 local sqlite3 = require "sqlite3"
+local url = require("socket.url")
 
 -- Carrot SqLite3 cache statements
 local kCacheCreateSQL = "CREATE TABLE IF NOT EXISTS cache(request_servicetype TEXT, request_endpoint TEXT, request_payload TEXT, request_id TEXT, request_date REAL, retry_count INTEGER)"
@@ -63,6 +64,7 @@ carrot.init = function(appId, appSecret)
 	carrot._services = {auth = nil, post = nil, metrics = nil}
 	carrot._getDb()
 	carrot._sessonStartTime = os.time()
+	carrot._sdkVersion = "1.1.0"
 
 	if carrot.logTag then print(carrot.logTag, "Initialized") end
 
@@ -94,10 +96,10 @@ carrot.setStatusCallback = function(callback)
 end
 
 carrot.validateUser = function(accessToken)
-	local params = {
+	local params = carrot._addCommonPayload({
 		access_token = accessToken,
 		api_key = carrot._udid
-	}
+	})
 	carrot._accessToken = accessToken
 
 	carrot._postRequest(carrot.service.AUTH, "/games/"..carrot._appId.."/users.json", params, function(event)
@@ -132,8 +134,27 @@ carrot.service = {
 	POST = "post"
 }
 
+carrot._addCommonPayload = function(tbl)
+	if system.getInfo("appVersionString") then
+		tbl.app_version = system.getInfo("appVersionString")
+	end
+	if carrot.tag then
+		tbl.tag = carrot.tag
+	end
+	return tbl
+end
+
 carrot._servicesDiscovery = function()
-	network.request("http://services.gocarrot.com/services.json", "GET", function(event)
+	local systemInfo = string.gsub(string.lower(system.getInfo("platformName")), "%s+", "_") .. "_" .. system.getInfo("platformVersion")
+	local urlString = string.format("http://services.gocarrot.com/services.json?sdk_version=%s&sdk_platform=%s&game_id=%s",
+		url.escape(tostring(carrot._sdkVersion)),
+		url.escape(systemInfo),
+		url.escape(tostring(carrot._appId)))
+	if system.getInfo("appVersionString") then
+		urlString = urlString.."&app_version="..url.escape(system.getInfo("appVersionString"))
+	end
+	print(urlString)
+	network.request(urlString, "GET", function(event)
 		if not event.isError then
 			carrot._services = json.decode(event.response)
 			carrot._runCachedRequests('metrics')
@@ -275,12 +296,12 @@ carrot._postSignedRequest = function(service_type, endpoint, request_date, reque
 		return
 	end
 
-	local params = {
+	local params = carrot._addCommonPayload({
 		api_key = carrot._udid,
 		game_id = carrot._appId,
 		request_date = request_date,
 		request_id = request_id
-	}
+	})
 	for k,v in pairs(params) do payload[k] = v end
 
 	local pairsByKeys = function(t, f)
