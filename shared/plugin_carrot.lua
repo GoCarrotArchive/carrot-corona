@@ -62,16 +62,22 @@ carrot.init = function(appId, appSecret)
 	carrot._status = carrot.status.UNKNOWN
 	carrot._services = {auth = nil, post = nil, metrics = nil}
 	carrot._getDb()
+	carrot._sessonStartTime = os.time()
 
 	if carrot.logTag then print(carrot.logTag, "Initialized") end
 
-	-- Hook into suspend/resume events for close/open the db
+	-- On suspend/exit, cache session time metric and close the db
+	-- On resume, update session start time
 	Runtime:addEventListener("system", function(event)
-		if event.type == "applicationSuspend" then
+		if event.type == "applicationSuspend" or event.type == "applicationExit" then
+			carrot._makeCachedRequest(carrot.service.METRICS, "/session.json", {start_time = carrot._sessonStartTime, end_time = os.time()}, true)
+
 			if carrot._db and carrot._db:isopen() then
 				carrot._db:close()
 				carrot._db = nil
 			end
+		elseif event.type == "applicationResume" then
+			carrot._sessonStartTime = os.time()
 		end
 	end)
 
@@ -215,7 +221,7 @@ carrot._runCachedRequests = function(match)
 	carrot._runCachedRequests = real_fn
 end
 
-carrot._makeCachedRequest = function(service_type, endpoint, params)
+carrot._makeCachedRequest = function(service_type, endpoint, params, force_no_post)
 	local request_id = carrot._guid()
 	local request_date = os.time()
 
@@ -223,7 +229,7 @@ carrot._makeCachedRequest = function(service_type, endpoint, params)
 	local sql = string.format(kCacheInsertSQL, service_type, endpoint, params_json, request_id, request_date, 0)
 	if carrot._getDb():exec(sql) ~= sqlite3.OK then
 		if carrot.logTag then print(carrot.logTag, "Error caching request: "..carrot._getDb():error_message()) end
-	elseif carrot.getStatus() == carrot.status.READY then
+	elseif not force_no_post and (carrot.getStatus() == carrot.status.READY or service_type ~= carrot.service.POST) then
 		local cache_id = carrot._getDb():last_insert_rowid()
 		carrot._postCachedRequest(service_type, endpoint, cache_id, request_date, request_id, params, 0)
 	end
