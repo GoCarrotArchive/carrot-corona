@@ -217,9 +217,7 @@ carrot._runCachedRequests = function(match)
 	local real_fn = carrot._runCachedRequests
 	carrot._runCachedRequests = function() end
 	local sql = string.format(kCacheReadSQL, match)
-	print(sql)
 	for row in carrot._getDb():nrows(sql) do
-		print("Running cached request "..row.request_servicetype.." for "..row.request_endpoint.." retrys "..row.retry_count)
 		carrot._postCachedRequest(row.request_servicetype, row.request_endpoint, row.rowid, row.request_date, row.request_id, json.decode(row.request_payload), row.retry_count)
 	end
 	carrot._runCachedRequests = real_fn
