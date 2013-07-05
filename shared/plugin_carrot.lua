@@ -24,11 +24,16 @@ local ltn12 = require "ltn12"
 local sqlite3 = require "sqlite3"
 
 -- Carrot SqLite3 cache statements
-local kCacheCreateSQL = "CREATE TABLE IF NOT EXISTS cache(request_endpoint TEXT, request_payload TEXT, request_id TEXT, request_date REAL, retry_count INTEGER)"
-local kCacheReadSQL = "SELECT rowid, request_endpoint, request_payload, request_id, request_date, retry_count FROM cache ORDER BY retry_count"
-local kCacheInsertSQL = "INSERT INTO cache (request_endpoint, request_payload, request_id, request_date, retry_count) VALUES ('%s', '%s', '%s', %f, %d)"
+local kCacheCreateSQL = "CREATE TABLE IF NOT EXISTS cache(request_servicetype TEXT, request_endpoint TEXT, request_payload TEXT, request_id TEXT, request_date REAL, retry_count INTEGER)"
+local kCacheReadSQL = "SELECT rowid, request_servicetype, request_endpoint, request_payload, request_id, request_date, retry_count FROM cache WHERE request_servicetype LIKE '%s' ORDER BY retry_count"
+local kCacheInsertSQL = "INSERT INTO cache (request_servicetype, request_endpoint, request_payload, request_id, request_date, retry_count) VALUES ('%s', '%s', '%s', '%s', %f, %d)"
 local kCacheUpdateSQL = "UPDATE cache SET retry_count=%d WHERE rowid=%d"
 local kCacheDeleteSQL = "DELETE FROM cache WHERE rowid=%d"
+
+local kInstallTableCreateSQL = "CREATE TABLE IF NOT EXISTS install_tracking(install_date REAL, metric_sent INTEGER)"
+local kInstallTableReadSQL = "SELECT MAX(install_date) AS `install_date`, metric_sent FROM install_tracking"
+local kInstallTableUpdateSQL = "INSERT INTO install_tracking (install_date, metric_sent) VALUES (%f, 0)"
+local kInstallTableMetricSentSQL = "UPDATE install_tracking SET metric_sent=1"
 
 -- Carrot status codes.
 carrot.status = {
@@ -50,12 +55,13 @@ carrot.status = {
 
 carrot.logTag = "[Carrot]"
 
-carrot.init = function(appId, appSecret, hostname)
+carrot.init = function(appId, appSecret)
 	carrot._appId = appId
 	carrot._appSecret = appSecret
-	carrot._hostname = hostname or "gocarrot.com"
 	carrot._udid = system.getInfo("deviceID")
 	carrot._status = carrot.status.UNKNOWN
+	carrot._services = {auth = nil, post = nil, metrics = nil}
+	carrot._getDb()
 
 	if carrot.logTag then print(carrot.logTag, "Initialized") end
 
@@ -68,6 +74,9 @@ carrot.init = function(appId, appSecret, hostname)
 			end
 		end
 	end)
+
+	-- Begin services discovery
+	carrot._servicesDiscovery()
 end
 
 carrot.getStatus = function()
@@ -83,36 +92,81 @@ carrot.validateUser = function(accessToken)
 		access_token = accessToken,
 		api_key = carrot._udid
 	}
+	carrot._accessToken = accessToken
 
-	carrot._postRequest("/games/"..carrot._appId.."/users.json", params, function(event)
+	carrot._postRequest(carrot.service.AUTH, "/games/"..carrot._appId.."/users.json", params, function(event)
 		local status = carrot._updateStatus(event)
 	end)
 end
 
 carrot.postAchievement = function(achievementId)
-	carrot._makeCachedRequest("/me/achievements.json", {achievement_id = achievementId})
+	carrot._makeCachedRequest(carrot.service.POST, "/me/achievements.json", {achievement_id = achievementId})
 end
 
 carrot.postHighScore = function(score)
-	carrot._makeCachedRequest("/me/scores.json", {value = score})
+	carrot._makeCachedRequest(carrot.service.POST, "/me/scores.json", {value = score})
 end
 
 carrot.postAction = function(actionId, objectInstanceId, actionProperties)
 	local payload = {action_id = actionId, object_instance_id = objectInstanceId}
 	if actionProperties then payload['action_properties'] = actionProperties end
-	carrot._makeCachedRequest("/me/actions.json", payload)
+	carrot._makeCachedRequest(carrot.service.POST, "/me/actions.json", payload)
 end
 
 -- Internal functions
 
+-- Carrot status codes.
+carrot.service = {
+	METRICS = "metrics",
+	AUTH = "auth",
+	POST = "post"
+}
+
+carrot._servicesDiscovery = function()
+	network.request("http://services.gocarrot.com/services.json", "GET", function(event)
+		if not event.isError then
+			carrot._services = json.decode(event.response)
+			carrot._runCachedRequests('metrics')
+			if carrot._accessToken then
+				carrot.validateUser(carrot._accessToken)
+			end
+		end
+	end)
+end
+
 carrot._getDb = function()
-	if not (carrot._db and carrot._db:isopen())
+	if not (carrot._db and carrot._db:isopen()) then
 		local path = system.pathForFile("carrot.db", system.DocumentsDirectory)
 		carrot._db = sqlite3.open(path)
 
 		if carrot._db then
 			if carrot._db:exec(kCacheCreateSQL) ~= sqlite3.OK then
 				if carrot.logTag then print(carrot.logTag, "Error creating Carrot cache "..carrot._db:error_message()) end
+			end
+
+			if carrot._db:exec(kInstallTableCreateSQL) ~= sqlite3.OK then
+				if carrot.logTag then print(carrot.logTag, "Error creating Carrot cache "..carrot._db:error_message()) end
+			else
+				for row in carrot._db:nrows(kInstallTableReadSQL) do
+					carrot._installDate = row.install_date
+					carrot._installMetricSent = row.metric_sent
+				end
+
+				if carrot._installDate == nil then
+					carrot._installDate = os.time()
+					local sql = string.format(kInstallTableUpdateSQL, carrot._installDate)
+					if carrot._db:exec(sql) ~= sqlite3.OK then
+						print(carrot._db:error_message())
+					end
+				end
+
+				if not carrot._installMetricSent then
+					timer.performWithDelay(0, function()
+						carrot._makeCachedRequest(carrot.service.METRICS, "/install.json", {install_date = carrot._installDate})
+						carrot._db:exec(kInstallTableMetricSentSQL)
+						carrot._installMetricSent = true
+					end)
+				end
 			end
 		else
 			if carrot.logTag then print(carrot.logTag, "Error creating Carrot cache "..carrot._db:error_message()) end
@@ -122,6 +176,10 @@ carrot._getDb = function()
 end
 
 carrot._updateStatus = function(event)
+	if event == nil then
+		return carrot._status
+	end
+
 	local status = carrot._status
 	if event.status == 201 or event.status == 200 then
 		status = carrot.status.READY
@@ -138,40 +196,54 @@ carrot._updateStatus = function(event)
 	end
 
 	if carrot._status ~= carrot.status.READY and status == carrot.status.READY then
-		timer.performWithDelay(0, carrot._runCachedRequests)
+		carrot._runCachedRequests('%')
 	end
 
 	carrot._status = status
 	return status
 end
 
-carrot._runCachedRequests = function()
+carrot._runCachedRequests = function(match)
 	local real_fn = carrot._runCachedRequests
 	carrot._runCachedRequests = function() end
-	for row in carrot._getDb():nrows(kCacheReadSQL) do
-		carrot._postCachedRequest(row.request_endpoint, row.rowid, row.request_date, row.request_id, json.decode(row.request_payload))
+	local sql = string.format(kCacheReadSQL, match)
+	print(sql)
+	for row in carrot._getDb():nrows(sql) do
+		print("Running cached request "..row.request_servicetype.." for "..row.request_endpoint.." retrys "..row.retry_count)
+		carrot._postCachedRequest(row.request_servicetype, row.request_endpoint, row.rowid, row.request_date, row.request_id, json.decode(row.request_payload), row.retry_count)
 	end
 	carrot._runCachedRequests = real_fn
 end
 
-carrot._makeCachedRequest = function(endpoint, params)
+carrot._makeCachedRequest = function(service_type, endpoint, params)
 	local request_id = carrot._guid()
 	local request_date = os.time()
 
 	local params_json = json.encode(params)
-	local sql = string.format(kCacheInsertSQL, endpoint, params_json, request_id, request_date, 0)
+	local sql = string.format(kCacheInsertSQL, service_type, endpoint, params_json, request_id, request_date, 0)
 	if carrot._getDb():exec(sql) ~= sqlite3.OK then
 		if carrot.logTag then print(carrot.logTag, "Error caching request: "..carrot._getDb():error_message()) end
 	elseif carrot.getStatus() == carrot.status.READY then
 		local cache_id = carrot._getDb():last_insert_rowid()
-		carrot._postCachedRequest(endpoint, cache_id, request_date, request_id, params, 0)
+		carrot._postCachedRequest(service_type, endpoint, cache_id, request_date, request_id, params, 0)
 	end
 end
 
-carrot._postCachedRequest = function(endpoint, cache_id, request_date, request_id, payload, retry_count)
-	carrot._postSignedRequest(endpoint, request_date, request_id, payload, function(event)
+carrot._postCachedRequest = function(service_type, endpoint, cache_id, request_date, request_id, payload, retry_count)
+	carrot._postSignedRequest(service_type, endpoint, request_date, request_id, payload, function(event)
 		local delete_sql = string.format(kCacheDeleteSQL, cache_id)
-		if event.status == 404 then
+		if service_type == carrot.service.METRICS then
+			if event and (event.status == 200 or event.status == 201) then
+				if carrot._getDb():exec(delete_sql) ~= sqlite3.OK then
+					if carrot.logTag then print(carrot.logTag, "Error deleting request from cache: "..carrot._getDb():error_message()) end
+				end
+			else
+				local retry_sql = string.format(kCacheUpdateSQL, retry_count + 1, cache_id)
+				if carrot._getDb():exec(retry_sql) ~= sqlite3.OK then
+					if carrot.logTag then print(carrot.logTag, "Error adding retry in cache: "..carrot._getDb():error_message()) end
+				end
+			end
+		elseif event.status == 404 then
 			if carrot.logTag then print(carrot.logTag, "Resource not found, removing from queue.") end
 			if carrot._getDb():exec(delete_sql) ~= sqlite3.OK then
 				if carrot.logTag then print(carrot.logTag, "Error deleting request from cache: "..carrot._getDb():error_message()) end
@@ -189,7 +261,12 @@ carrot._postCachedRequest = function(endpoint, cache_id, request_date, request_i
 	end)
 end
 
-carrot._postSignedRequest = function(endpoint, request_date, request_id, payload, callback)
+carrot._postSignedRequest = function(service_type, endpoint, request_date, request_id, payload, callback)
+	if carrot._services[service_type] == nil then
+		if callback then callback(nil) end
+		return
+	end
+
 	local params = {
 		api_key = carrot._udid,
 		game_id = carrot._appId,
@@ -217,7 +294,7 @@ carrot._postSignedRequest = function(endpoint, request_date, request_id, payload
 		urlParams = urlParams.."&"..k.."="..v
 	end
 
-	local stringToSign = "POST\n"..carrot._hostname.."\n"..endpoint.."\n"..urlParams:sub(2)
+	local stringToSign = "POST\n"..carrot._services[service_type].."\n"..endpoint.."\n"..urlParams:sub(2)
 	local hash = crypto.hmac(crypto.sha256, stringToSign, carrot._appSecret, true)
 	local b64hash = {}
 	ltn12.pump.all(
@@ -229,10 +306,15 @@ carrot._postSignedRequest = function(endpoint, request_date, request_id, payload
 	)
 	payload['sig'] = table.concat(b64hash)
 
-	carrot._postRequest(endpoint, payload, callback)
+	carrot._postRequest(service_type, endpoint, payload, callback)
 end
 
-carrot._postRequest = function (endpoint, params, callback)
+carrot._postRequest = function (service_type, endpoint, params, callback)
+	if carrot._services[service_type] == nil then
+		if callback then callback(nil) end
+		return
+	end
+
 	local boundary = "-===-httpB0unDarY-==-"
 
 	local body = ""
@@ -245,7 +327,7 @@ carrot._postRequest = function (endpoint, params, callback)
 	local headers = {}
 	headers["Content-Type"] = "multipart/form-data; boundary="..boundary
 
-	network.request("https://"..carrot._hostname..endpoint, "POST", callback, {headers = headers, body = body})
+	network.request("https://"..carrot._services[service_type]..endpoint, "POST", callback, {headers = headers, body = body})
 end
 
 carrot._guid = function()
