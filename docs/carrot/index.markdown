@@ -48,6 +48,8 @@ The following platforms are supported:
 
 #### [carrot.postAction()][plugin.carrot.postAction]
 
+#### [carrot.postPremiumCurrencyPurchase()][plugin.carrot.postPremiumCurrencyPurchase]
+
 ## Properties
 
 #### [carrot.logTag][plugin.carrot.logTag]
