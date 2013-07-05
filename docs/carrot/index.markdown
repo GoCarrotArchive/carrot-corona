@@ -5,7 +5,8 @@
 > __Revision__          [REVISION_LABEL](REVISION_URL)
 > __Keywords__          carrot
 > __Sample code__       [Available in the Carrot Docs for Corona](https://gocarrot.com/docs/corona)
-> __See also__          
+> __See also__          [Carrot website](https://www.gocarrot.com/)
+> __Availability__      Starter, Pro, Enterprise
 > --------------------- ------------------------------------------------------------------------------------------
 
 ## Overview
