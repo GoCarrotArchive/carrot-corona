@@ -107,15 +107,17 @@ end
 -- Internal functions
 
 carrot._getDb = function()
-	local path = system.pathForFile("carrot.db", system.DocumentsDirectory)
-	carrot._db = sqlite3.open(path)
+	if not (carrot._db and carrot._db:isopen())
+		local path = system.pathForFile("carrot.db", system.DocumentsDirectory)
+		carrot._db = sqlite3.open(path)
 
-	if carrot._db then
-		if carrot._db:exec(kCacheCreateSQL) ~= sqlite3.OK then
+		if carrot._db then
+			if carrot._db:exec(kCacheCreateSQL) ~= sqlite3.OK then
+				if carrot.logTag then print(carrot.logTag, "Error creating Carrot cache "..carrot._db:error_message()) end
+			end
+		else
 			if carrot.logTag then print(carrot.logTag, "Error creating Carrot cache "..carrot._db:error_message()) end
 		end
-	else
-		if carrot.logTag then print(carrot.logTag, "Error creating Carrot cache "..carrot._db:error_message()) end
 	end
 	return carrot._db
 end
