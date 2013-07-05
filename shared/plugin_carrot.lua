@@ -119,6 +119,10 @@ carrot.postAction = function(actionId, objectInstanceId, actionProperties)
 	carrot._makeCachedRequest(carrot.service.POST, "/me/actions.json", payload)
 end
 
+carrot.postPremiumCurrencyPurchase = function(amount, currency)
+	carrot._makeCachedRequest(carrot.service.METRICS, "/purchase.json", {amount = amount, currency = currency})
+end
+
 -- Internal functions
 
 -- Carrot status codes.
