@@ -115,9 +115,20 @@ carrot.postHighScore = function(score)
 	carrot._makeCachedRequest(carrot.service.POST, "/me/scores.json", {value = score})
 end
 
-carrot.postAction = function(actionId, objectInstanceId, actionProperties)
-	local payload = {action_id = actionId, object_instance_id = objectInstanceId}
-	if actionProperties then payload['action_properties'] = actionProperties end
+carrot.postAction = function(actionId, objectInstanceId, actionProperties, objectProperties)
+	if actionId == nil then
+		error("actionId must not be nil.")
+	elseif objectInstanceId == nil and objectProperties == nil then
+		error("objectProperties must not be nil if objectInstanceId is nil.")
+	elseif objectProperties ~= nil and objectProperties['object_type'] == nil then
+		error("objectProperties must contain an entry for 'object_type'.")
+	end
+
+	local payload = {action_id = actionId}
+	if objectInstanceId then payload['object_instance_id'] = objectInstanceId end
+	if actionProperties then payload['action_properties'] = json.encode(actionProperties) end
+	if objectProperties then payload['object_properties'] = json.encode(objectProperties) end
+
 	carrot._makeCachedRequest(carrot.service.POST, "/me/actions.json", payload)
 end
 
@@ -153,7 +164,6 @@ carrot._servicesDiscovery = function()
 	if system.getInfo("appVersionString") then
 		urlString = urlString.."&app_version="..url.escape(system.getInfo("appVersionString"))
 	end
-	print(urlString)
 	network.request(urlString, "GET", function(event)
 		if not event.isError then
 			carrot._services = json.decode(event.response)

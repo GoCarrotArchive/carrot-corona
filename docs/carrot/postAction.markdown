@@ -21,11 +21,14 @@ Post a viral action to the Carrot service.
 ##### actionId ~^(required)^~
 _[String][api.type.String]._ The identifier for the action in Carrot.
 
-##### objectInstanceId ~^(required)^~
-_[String][api.type.String]._ The identifier of the object instance in Carrot.
+##### objectInstanceId ~^(optional)^~
+_[String][api.type.String]._ The identifier of the object instance in Carrot, the identifier of the dynamic object to create/reuse, or nil for a one-time use dynamic ojbect.
 
 ##### actionProperties ~^(optional)^~
-_[Table][api.type.Table]._ Properties to be sent along with the action.
+_[Table][api.type.Table]._ Properties to be sent along with the action, or nil.
+
+##### objectProperties ~^(optional)^~
+_[Table][api.type.Table]._ Properties used for creating a dynamic object. This must contain 'object_type', 'title', 'description', and 'image_url'.
 
 ## Examples
 
