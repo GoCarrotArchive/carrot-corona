@@ -26,7 +26,7 @@ local url = require("socket.url")
 
 -- Carrot SqLite3 cache statements
 local kCacheCreateSQL = "CREATE TABLE IF NOT EXISTS cache(request_servicetype TEXT, request_endpoint TEXT, request_payload TEXT, request_id TEXT, request_date REAL, retry_count INTEGER)"
-local kCacheReadSQL = "SELECT rowid, request_servicetype, request_endpoint, request_payload, request_id, request_date, retry_count FROM cache WHERE request_servicetype LIKE '%s' ORDER BY retry_count"
+local kCacheReadSQL = "SELECT rowid, request_servicetype, request_endpoint, request_payload, request_id, request_date, retry_count FROM cache WHERE request_servicetype LIKE '%s' ORDER BY retry_count LIMIT 10"
 local kCacheInsertSQL = "INSERT INTO cache (request_servicetype, request_endpoint, request_payload, request_id, request_date, retry_count) VALUES ('%s', '%s', '%s', '%s', %f, %d)"
 local kCacheUpdateSQL = "UPDATE cache SET retry_count=%d WHERE rowid=%d"
 local kCacheDeleteSQL = "DELETE FROM cache WHERE rowid=%d"
