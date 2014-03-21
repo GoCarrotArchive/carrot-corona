@@ -50,15 +50,17 @@ function scene:createScene( event )
 		width=154, height=40,
 		onRelease = onPlayBtnRelease	-- event listener function
 	}
-	playBtn:setReferencePoint( display.CenterReferencePoint )
+	playBtn.anchorX = 0.5;
+	playBtn.anchorY = 0.5;
 	playBtn.x = display.contentWidth*0.5
 	playBtn.y = display.contentHeight - 125
 
 	-- Carrot status text
 	local carrotStatusText = display.newText("Carrot Status: UNKNOWN", 0,0, nil, 14);
-	carrotStatusText:setReferencePoint(display.TopLeftReferencePoint);
+	carrotStatusText.anchorX = 0;
+	carrotStatusText.anchorY = 0;
 	carrotStatusText.x = 0;
-	
+
 	-- all display objects must be inserted into group
 	group:insert( playBtn )
 	group:insert( carrotStatusText )
@@ -67,6 +69,8 @@ function scene:createScene( event )
 	carrot.init(fbAppID, carrotAppSecret)
 	carrot.setStatusCallback(function(status)
 		carrotStatusText.text = "Carrot Status: "..status
+		carrotStatusText.anchorX = 0;
+		carrotStatusText.anchorY = 0;
 		carrotStatusText:setReferencePoint(display.TopLeftReferencePoint);
 		carrotStatusText.x = 0;
 	end)
